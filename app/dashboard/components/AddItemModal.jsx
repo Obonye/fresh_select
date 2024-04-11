@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   ModalContent,
@@ -11,52 +11,40 @@ import {
   Input,
   Textarea,
 } from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { useDisclosure } from "@nextui-org/react";
-import CategorySelect from "./CategorySelect";
-import ProductModel from "@/app/models/ProductModel";
 import ProductController from "@/app/controllers/ProductController";
 import { createClient } from "@/utils/supabase/client";
+import CategorySelect from "./CategorySelect";
+import PlusCircle from "@/app/icons/PlusCircle";
 
 export default function AddItemModal() {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [step, setStep] = useState(1);
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
+  const [selectedCategoryData, setSelectedCategoryData] = useState(null);
   const [quantity, setQuantity] = useState(0);
   const [originalPrice, setOriginalPrice] = useState(0);
   const [newPrice, setNewPrice] = useState(0);
   const [expiryDate, setExpiryDate] = useState("");
   const [tags, setTags] = useState("");
   const [classification, setClassification] = useState("");
-  const [availability, setAvailability] = useState("");
   const [stockThreshold, setStockThreshold] = useState(0);
 
   const controller = new ProductController();
   const supabase = createClient();
+
   const handleNext = () => {
     setStep(step + 1);
   };
 
-  const handlePrev = () => {
-    setStep(step - 1);
+  const handleSelectCategory = (categoryData) => {
+    setSelectedCategoryData(categoryData);
   };
 
-  const fetchCategoryID = async (category) => {
-    console.log(category);
-    try {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("name", { category });
-
-      if (error) {
-        console.log("Error fetching id");
-      } else {
-        console.log("Category id ", data);
-        return data;
-      }
-    } catch (e) {}
+  const handlePrev = () => {
+    setStep(step - 1);
   };
 
   const handleSubmit = async () => {
@@ -77,19 +65,20 @@ export default function AddItemModal() {
       if (error) {
         console.log("Error creating product", error);
       } else {
-        console.log("Ccategory is", category);
-        let categoryID = fetchCategoryID(category);
-        controller.insertProductCategories(data[0].id, categoryID);
-        console.log("item created successfully:", data[0]);
+        console.log("Selected Category ID:", selectedCategoryData);
+        controller.insertProductCategories(data[0].id, selectedCategoryData.id);
+        console.log("Item created successfully:", data[0]);
       }
     } catch (e) {
-      console.log("Error occured: ", e);
+      console.log("Error occurred: ", e);
     }
   };
 
   return (
     <>
-      <Button onPress={onOpen}>New Product</Button>
+      <Button onPress={onOpen} endContent={<PlusCircle />}>
+        New Product
+      </Button>
       <Modal backdrop="blur" isOpen={isOpen} onOpenChange={onOpenChange}>
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
@@ -99,37 +88,42 @@ export default function AddItemModal() {
             {step === 1 && (
               <>
                 <div>
-                  <label htmlFor="itemName">Item Name</label>
                   <Input
+                    isRequired
+                    label="Item Name"
+                    labelPlacement="outside"
                     type="text"
                     name="itemName"
+                    placeholder="eg Watermelon"
                     value={itemName}
                     onChange={(e) => setItemName(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label htmlFor="description">Description</label>
                   <Textarea
+                    isRequired
+                    label="Description"
+                    labelPlacement="outside"
                     type="text"
                     name="description"
+                    placeholder="Large size"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label htmlFor="categories">Category</label>
-                  <CategorySelect
-                    value={category}
-                    onChange={(value) => setCategory(value)}
-                  />
+                  <CategorySelect onSelectCategory={handleSelectCategory} />
                 </div>
                 <div>
-                  <label htmlFor="quantity">Quantity</label>
                   <Input
-                    type="number"
-                    name="quantity"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
+                    isRequired
+                    label="Tags"
+                    labelPlacement="outside"
+                    placeholder="fruits,healthy,meat, etc..."
+                    type="text"
+                    name="tags"
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
                   />
                 </div>
               </>
@@ -137,8 +131,10 @@ export default function AddItemModal() {
             {step === 2 && (
               <>
                 <div>
-                  <label htmlFor="originalPrice">Original Price</label>
                   <Input
+                    isRequired
+                    label="Original Price"
+                    labelPlacement="outside"
                     type="number"
                     name="originalPrice"
                     value={originalPrice}
@@ -146,8 +142,10 @@ export default function AddItemModal() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="newPrice">New Price</label>
                   <Input
+                    isRequired
+                    label="New Price"
+                    labelPlacement="outside"
                     type="number"
                     name="newPrice"
                     value={newPrice}
@@ -155,21 +153,25 @@ export default function AddItemModal() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="expiryDate">Expiry Date</label>
                   <Input
+                    isRequired
+                    label="Quantity"
+                    labelPlacement="outside"
+                    type="number"
+                    name="quantity"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Input
+                    isRequired
+                    label="Expiry Date"
+                    labelPlacement="outside"
                     type="date"
                     name="expiryDate"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="tags">Tags</label>
-                  <Input
-                    type="text"
-                    name="tags"
-                    value={tags}
-                    onChange={(e) => setTags(e.target.value)}
                   />
                 </div>
               </>
@@ -179,16 +181,17 @@ export default function AddItemModal() {
                 <div>
                   <label htmlFor="classification">Classification</label>
                   <Input
+                    isRequired
                     type="text"
                     name="classification"
                     value={classification}
                     onChange={(e) => setClassification(e.target.value)}
                   />
                 </div>
-
                 <div>
                   <label htmlFor="stockThreshold">Stock Threshold</label>
                   <Input
+                    isRequired
                     type="number"
                     name="stockThreshold"
                     value={stockThreshold}

@@ -14,6 +14,7 @@ import {
 } from "@nextui-org/react";
 import MyAvatar from "./avatar";
 import BellIcon from "../icons/BellIcon";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 export default function MyNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,8 +33,8 @@ export default function MyNav() {
   ];
   return (
     <Navbar
-      className="w-full bg-transparent"
-      maxWidth="full"
+      className=" bg-transparent"
+      maxWidth="2xl"
       onMenuOpenChange={setIsMenuOpen}
     >
       <NavbarMenuToggle
@@ -64,12 +65,14 @@ export default function MyNav() {
         </NavbarItem>
       </NavbarContent>
       <NavbarContent justify="end">
+      <NavbarMenuItem><ThemeSwitcher/></NavbarMenuItem>
         <Badge color="danger" content={3} shape="circle">
           <Button isIconOnly variant="faded">
             <BellIcon />
           </Button>
         </Badge>
         <MyAvatar></MyAvatar>
+        
       </NavbarContent>
 
       <NavbarMenu>
@@ -91,6 +94,7 @@ export default function MyNav() {
             </Link>
           </NavbarMenuItem>
         ))}
+        
       </NavbarMenu>
     </Navbar>
   );

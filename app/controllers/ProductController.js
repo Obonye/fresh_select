@@ -26,24 +26,27 @@ class ProductController {
         availability: product.availability,
         stock_threshold: product.stockThreshold,
       });
-  
-      const { data, error } = await supabase.from("products").insert({
-        item_name: product.itemName,
-        description: product.description,
-        quantity: product.quantity,
-        original_price: product.originalPrice,
-        new_price: product.newPrice,
-        expiry_date: product.expiryDate,
-        classification: product.classification,
-        stock_threshold: product.stockThreshold,
-      }).select()
-  
-      console.log(data)
+
+      const { data, error } = await supabase
+        .from("products")
+        .insert({
+          item_name: product.itemName,
+          description: product.description,
+          quantity: product.quantity,
+          original_price: product.originalPrice,
+          new_price: product.newPrice,
+          expiry_date: product.expiryDate,
+          classification: product.classification,
+          stock_threshold: product.stockThreshold,
+        })
+        .select();
+
+      console.log(data);
       if (error) {
         console.error("Error creating product:", error);
         throw new Error(`Error creating product: ${error.message}`);
       }
-  
+
       if (data) {
         console.log("Created product with ID:", data[0].id);
         return data[0].id;
@@ -59,12 +62,12 @@ class ProductController {
 
   insertProductCategories = async (productID, categoryID) => {
     try {
-      const { data, error } = await supabase.from("productcategories").insert({
+      const { error } = await supabase.from("productcategories").insert({
         product_id: productID,
         category_id: categoryID,
       });
 
-      if (data) {
+      if (error) {
         return data;
       } else {
         throw error;

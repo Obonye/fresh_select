@@ -1,5 +1,8 @@
+'use client'
+
 import { Button } from "@nextui-org/react";
 import React from "react";
+import { useRouter } from 'next/navigation'
 import {
   Navbar,
   NavbarBrand,
@@ -12,6 +15,7 @@ import {
 } from "@nextui-org/react";
 import { ThemeSwitcher } from "./components/ThemeSwitcher";
 export default function Home() {
+  const router=useRouter()
   return (
     <>
       <Navbar maxWidth="xl" className="">
@@ -20,7 +24,7 @@ export default function Home() {
         </NavbarContent>
         <NavbarContent justify="end" className="w-full">
           <NavbarItem>
-            <Button>Login</Button>
+            <Button onClick={()=>router.push('/auth/login')}>Login</Button>
           </NavbarItem>
           <NavbarItem>
             <Button>Sign Up</Button>
