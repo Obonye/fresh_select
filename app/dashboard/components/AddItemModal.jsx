@@ -67,7 +67,21 @@ export default function AddItemModal() {
       } else {
         console.log("Selected Category ID:", selectedCategoryData);
         controller.insertProductCategories(data[0].id, selectedCategoryData.id);
+        controller.addTagsToProduct(data[0].id,tags)
         console.log("Item created successfully:", data[0]);
+
+
+        //reset values
+        setItemName("");
+        setDescription("");
+        setSelectedCategoryData(null);
+        setQuantity(0);
+        setOriginalPrice(0);
+        setNewPrice(0);
+        setExpiryDate("");
+        setTags("");
+        setClassification("");
+        setStockThreshold(0);
       }
     } catch (e) {
       console.log("Error occurred: ", e);

@@ -10,7 +10,7 @@ import MyComponent from "./components/SelectTest";
 
 export default function Dashboard() {
   return (
-    <div className="h-screen w-full flex  justify-center">
+    <div className="h-screen w-full flex  justify-center p-0 m-0">
       <div className="container flex flex-col gap-10  w-screen">
         <h1 className="font-bold text-3xl">Dashboard</h1>
 

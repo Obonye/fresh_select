@@ -44,12 +44,12 @@ export default function MyNav() {
       <NavbarBrand>Logo</NavbarBrand>
       <NavbarContent justify="center" className="hidden sm:flex gap-4">
         <NavbarItem>
-          <Link color="foreground" href="#">
+          <Link color="foreground" href="/dashboard">
             Home
           </Link>
         </NavbarItem>
         <NavbarItem>
-          <Link color="foreground" href="#">
+          <Link color="foreground" href="/dashboard/inventory">
             Inventory
           </Link>
         </NavbarItem>
