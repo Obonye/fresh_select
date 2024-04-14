@@ -11,7 +11,9 @@ export default function Inventory() {
         <h1 className="text-3xl font-bold"></h1>
         <h3></h3>
       </section>
-      <ProductsTable></ProductsTable>
+      <section className="mt-5">
+        <ProductsTable></ProductsTable>
+      </section>
     </div>
   );
 }

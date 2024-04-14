@@ -19,18 +19,7 @@ import { ThemeSwitcher } from "./ThemeSwitcher";
 export default function MyNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const menuItems = [
-    "Profile",
-    "Dashboard",
-    "Activity",
-    "Analytics",
-    "System",
-    "Deployments",
-    "My Settings",
-    "Team Settings",
-    "Help & Feedback",
-    "Log Out",
-  ];
+  const menuItems = ["Home", "Dashboard", "Inventory", "Orders", "Billing"];
   return (
     <Navbar
       className=" bg-transparent"
@@ -44,8 +33,13 @@ export default function MyNav() {
       <NavbarBrand>Logo</NavbarBrand>
       <NavbarContent justify="center" className="hidden sm:flex gap-4">
         <NavbarItem>
-          <Link color="foreground" href="/dashboard">
+          <Link color="foreground" href="/">
             Home
+          </Link>
+        </NavbarItem>
+        <NavbarItem>
+          <Link color="foreground" href="/dashboard">
+            Dashboard
           </Link>
         </NavbarItem>
         <NavbarItem>
@@ -65,14 +59,15 @@ export default function MyNav() {
         </NavbarItem>
       </NavbarContent>
       <NavbarContent justify="end">
-      <NavbarMenuItem><ThemeSwitcher/></NavbarMenuItem>
+        <NavbarMenuItem>
+          <ThemeSwitcher />
+        </NavbarMenuItem>
         <Badge color="danger" content={3} shape="circle">
           <Button isIconOnly variant="faded">
             <BellIcon />
           </Button>
         </Badge>
         <MyAvatar></MyAvatar>
-        
       </NavbarContent>
 
       <NavbarMenu>
@@ -94,7 +89,6 @@ export default function MyNav() {
             </Link>
           </NavbarMenuItem>
         ))}
-        
       </NavbarMenu>
     </Navbar>
   );

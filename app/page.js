@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
 import { Button } from "@nextui-org/react";
-import React from "react";
-import { useRouter } from 'next/navigation'
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Navbar,
   NavbarBrand,
@@ -14,21 +14,50 @@ import {
   Link,
 } from "@nextui-org/react";
 import { ThemeSwitcher } from "./components/ThemeSwitcher";
+import { createClient } from "@/utils/supabase/client";
 export default function Home() {
-  const router=useRouter()
+  const router = useRouter();
+  const supabase = createClient();
+  const [session, setSession] = React.useState();
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        throw error;
+      }
+      setSession(data);
+      console.log(data);
+    };
+    fetchSession();
+  }, [setSession, supabase.auth]);
+
   return (
     <>
-      <Navbar maxWidth="xl" className="">
+      <Navbar maxWidth="full" className="">
         <NavbarContent>
           <NavbarBrand>Logo</NavbarBrand>
         </NavbarContent>
         <NavbarContent justify="end" className="w-full">
-          <NavbarItem>
-            <Button onClick={()=>router.push('/auth/login')}>Login</Button>
-          </NavbarItem>
-          <NavbarItem>
-            <Button>Sign Up</Button>
-          </NavbarItem>
+          {session ? (
+            <NavbarItem>
+              <Button onClick={() => router.push("/dashboard")}>
+                Dashboard
+              </Button>
+            </NavbarItem>
+          ) : (
+            <>
+              <NavbarItem>
+                <Button onClick={() => router.push("/auth/login")}>
+                  Login
+                </Button>
+              </NavbarItem>
+              <NavbarItem>
+                <Button>Sign Up</Button>
+              </NavbarItem>
+            </>
+          )}
+
           <NavbarItem>
             <ThemeSwitcher />
           </NavbarItem>

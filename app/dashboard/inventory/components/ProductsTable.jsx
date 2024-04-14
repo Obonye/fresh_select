@@ -28,6 +28,7 @@ import {
 } from "@nextui-org/table";
 import AddItemModal from "../../components/AddItemModal";
 import { useAsyncList } from "@react-stately/data";
+import SearchIcon from "@/app/icons/SearchIcon";
 
 const colors = [
   "default",
@@ -46,8 +47,10 @@ const statusColorMap = {
 
 export default function ProductsTable() {
   const [selectedColor, setSelectedColor] = React.useState("default");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const controller = useMemo(() => new ProductController(), []);
+
   const supabase = createClient();
 
   const [products, setProducts] = useState([]);
@@ -110,14 +113,14 @@ export default function ProductsTable() {
       case "new_price":
         return (
           <div className="flex flex-col">
-            <p className="text-bold text-small">{cellValue}</p>
+            <p className="text-bold text-small">{`P${cellValue}`}</p>
           </div>
         );
       case "quantity":
         return cellValue;
       case "actions":
         return (
-          <div className="relative flex  items-center gap-2">
+          <div className="relative flex items-center justify-end gap-2">
             <Dropdown>
               <DropdownTrigger>
                 <Button isIconOnly size="sm" variant="light">
@@ -136,6 +139,10 @@ export default function ProductsTable() {
         return cellValue;
     }
   }, []);
+
+  const filteredItems = list.items.filter((product) =>
+    product.item_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // useEffect(() => {
   //   const fetchProducts = async () => {
@@ -161,11 +168,21 @@ export default function ProductsTable() {
           >
             Filter
           </Button>
-          <Button variant="light" className="hover:bg-orange-500">
-            View All
-          </Button>
-          <AddItemModal />
+
+          <AddItemModal variant={"light"} />
+          <Input
+            isClearable
+            className="w-full "
+            placeholder="Search by name..."
+            startContent={<SearchIcon />}
+            value={searchTerm}
+            onClear={() => setSearchTerm("")}
+            onValueChange={(value) => setSearchTerm(value)}
+          />
         </div>
+      </div>
+      <div>
+        <small className="text-gray-500">{`Total items: ${list.items.length} `}</small>
       </div>
       <Table
         sortDescriptor={list.sortDescriptor}
@@ -189,7 +206,7 @@ export default function ProductsTable() {
           </TableColumn>
           <TableColumn key="actions">Actions</TableColumn>
         </TableHeader>
-        <TableBody items={list.items}>
+        <TableBody items={filteredItems}>
           {(item) => (
             <TableRow key={item.id}>
               {(columnKey) => (

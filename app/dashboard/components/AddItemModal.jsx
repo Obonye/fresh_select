@@ -18,7 +18,7 @@ import { createClient } from "@/utils/supabase/client";
 import CategorySelect from "./CategorySelect";
 import PlusCircle from "@/app/icons/PlusCircle";
 
-export default function AddItemModal() {
+export default function AddItemModal({ variant }) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [step, setStep] = useState(1);
   const [itemName, setItemName] = useState("");
@@ -67,9 +67,8 @@ export default function AddItemModal() {
       } else {
         console.log("Selected Category ID:", selectedCategoryData);
         controller.insertProductCategories(data[0].id, selectedCategoryData.id);
-        controller.addTagsToProduct(data[0].id,tags)
+        controller.addTagsToProduct(data[0].id, tags);
         console.log("Item created successfully:", data[0]);
-
 
         //reset values
         setItemName("");
@@ -90,7 +89,7 @@ export default function AddItemModal() {
 
   return (
     <>
-      <Button onPress={onOpen} endContent={<PlusCircle />}>
+      <Button onPress={onOpen} variant={variant} endContent={<PlusCircle />}>
         New Product
       </Button>
       <Modal backdrop="blur" isOpen={isOpen} onOpenChange={onOpenChange}>
