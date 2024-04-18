@@ -42,7 +42,7 @@ const colors = [
 const statusColorMap = {
   in_stock: "success",
   out_of_stock: "danger",
-  vacation: "warning",
+  discontinued: "warning",
 };
 
 export default function ProductsTable() {
@@ -54,6 +54,8 @@ export default function ProductsTable() {
   const supabase = createClient();
 
   const [products, setProducts] = useState([]);
+
+
 
   let list = useAsyncList({
     async load({ signal }) {
@@ -130,7 +132,11 @@ export default function ProductsTable() {
               <DropdownMenu>
                 <DropdownItem>View</DropdownItem>
                 <DropdownItem>Edit</DropdownItem>
-                <DropdownItem>Delete</DropdownItem>
+                <DropdownItem
+                  onClick={() => controller.deleteProduct(product.id)}
+                >
+                  Delete
+                </DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>

@@ -152,5 +152,15 @@ class ProductController {
       console.error("Error adding tags to product:", error.message);
     }
   }
+
+  async deleteProduct(itemID){
+    try{
+      const {error}=await supabase.from("products").delete().eq('id',itemID)
+      return "Product deleted successfully"
+    }catch(e){
+      "Error deleting product: ",e
+      
+    }
+  }
 }
 export default ProductController;

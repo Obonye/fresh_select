@@ -1,5 +1,5 @@
 "use client"
-
+import {useRouter} from "next/navigation"
 import React,{useEffect,useState} from 'react'
 import {Avatar} from "@nextui-org/react";
 import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem,Button} from "@nextui-org/react";
@@ -10,9 +10,11 @@ import SettingsIcon from '../icons/SettingsIcon';
 import LogoutIcon from '../icons/LogoutIcon';
 export default function MyAvatar() {
   const supabase=createClient()
+  const router=useRouter()
   const [userData, setUserData] = React.useState(null);
   const [profilePicture, setProfilePicture] = React.useState();
   const [profileUrl, setUrl] = React.useState();
+
 
   const [vendorID, setVendorID] = React.useState();
   const controller=new ProfileController()
@@ -85,7 +87,9 @@ export default function MyAvatar() {
       <Avatar src={profileUrl} size="md" />
       </DropdownTrigger>
       <DropdownMenu aria-label="Static Actions">
-        <DropdownItem key="new" endContent={<ProfileIcon/>}>{userData?.email}</DropdownItem>
+        <DropdownItem key="new" endContent={<ProfileIcon/>} onClick={()=>{
+           router.push(`/dashboard/profile/${userData?.id}`);
+        }}>{userData?.email}</DropdownItem>
         <DropdownItem key="edit" endContent={<SettingsIcon/>}>Settings </DropdownItem>
         <DropdownItem onClick={handleSignOut} endContent={<LogoutIcon/>}>Log out</DropdownItem>
       
