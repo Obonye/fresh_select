@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Button, ButtonGroup } from "@nextui-org/button";
 import FilterIcon from "@/app/icons/FilterIcon";
 import ProductController from "@/app/controllers/ProductController";
@@ -14,6 +15,7 @@ import {
   DropdownMenu,
   DropdownSection,
   DropdownItem,
+  Spinner,
 } from "@nextui-org/react";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -29,6 +31,7 @@ import {
 import AddItemModal from "../../components/AddItemModal";
 import { useAsyncList } from "@react-stately/data";
 import SearchIcon from "@/app/icons/SearchIcon";
+import toast from "react-hot-toast";
 
 const colors = [
   "default",
@@ -54,6 +57,10 @@ export default function ProductsTable() {
   const supabase = createClient();
 
   const [products, setProducts] = useState([]);
+  const [isLoading,setIsLoading]=useState(true);
+  const [emptyContent,setIsEmptyContent]=useState('')
+
+  const router=useRouter()
 
 
 
@@ -68,12 +75,16 @@ export default function ProductsTable() {
         if (error) {
           throw error;
         }
-
+        setIsLoading(false)
+        if(data && data.length ===0){
+          setIsEmptyContent('There are currently no items')
+        }
         return {
           items: data,
         };
       } catch (error) {
         console.error("Error fetching products:", error);
+        
         return { items: [] };
       }
     },
@@ -130,10 +141,10 @@ export default function ProductsTable() {
                 </Button>
               </DropdownTrigger>
               <DropdownMenu>
-                <DropdownItem>View</DropdownItem>
-                <DropdownItem>Edit</DropdownItem>
+                <DropdownItem onClick={()=>router.push(`/dashboard/inventory/${product.id}`)}>View</DropdownItem>
+                
                 <DropdownItem
-                  onClick={() => controller.deleteProduct(product.id)}
+                  onClick={() => {controller.deleteProduct(product.id,product.product_image)}}
                 >
                   Delete
                 </DropdownItem>
@@ -144,7 +155,7 @@ export default function ProductsTable() {
       default:
         return cellValue;
     }
-  }, []);
+  }, [controller, router]);
 
   const filteredItems = list.items.filter((product) =>
     product.item_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -212,7 +223,8 @@ export default function ProductsTable() {
           </TableColumn>
           <TableColumn key="actions">Actions</TableColumn>
         </TableHeader>
-        <TableBody items={filteredItems}>
+
+        <TableBody items={filteredItems} emptyContent={emptyContent} isLoading={isLoading} loadingContent={<Spinner label="Loading"/>}>
           {(item) => (
             <TableRow key={item.id}>
               {(columnKey) => (

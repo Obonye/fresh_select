@@ -36,5 +36,15 @@ class ProfileController{
           return data.publicUrl;
         }
       };
+
+      updateProfile=async({vendorID,vendorName,vendorType,location,description})=>{
+        const {error}=await supabase.from('vendors').update({'vendorName':vendorName,'vendor_type':vendorType, 'location':location, 'description':description}).match({'id':vendorID});
+
+        if(error){
+          console.log(error)
+          toast.error('oops something went wrong')
+        }
+        toast.success('profile updated successfully')
+      }
 }
 export default ProfileController

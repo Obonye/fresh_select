@@ -1,14 +1,15 @@
 // pages/dashboard/layout.js
-import React from 'react';
+import React from "react";
 
-import MyNav from '../components/myNav';
+import MyNav from "../components/myNav";
+import SideNav from "../components/sideNav";
 const DashboardLayout = ({ children }) => {
   return (
     <>
-    <MyNav/>
-    <main className="flex-1 p-4">{children}</main>
- 
-      
+    
+        <MyNav></MyNav>
+        <main>{children}</main>
+  
     </>
   );
 };

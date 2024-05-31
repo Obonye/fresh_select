@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/react";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 import { Textarea } from "@nextui-org/react";
 import { Input } from "@nextui-org/react";
 import Link from "next/link";
@@ -21,11 +23,20 @@ export default function RegistrationForm() {
   const [myUser, setUser] = useState();
   const [location, setLocation] = useState("");
   const [profilePicture, setProfilePicture] = useState(null);
+  const [skipProfilePicture, setSkipProfilePicture] = useState(false);
   const [heroImage, setHeroImage] = useState(null);
   const [toastMessage, setMessage] = useState("");
   const controller = new AuthController();
   const supabase = createClient();
-  const completeSignUp = async (userID) => {
+  const router = useRouter();
+  const completeSignUp = async (userID, profilePicture) => {
+    await supabase
+    .from("vendors")
+    .update({
+      profile_picture_url: profilePicture,
+    })
+    .eq("id", myUser.id);
+
     await supabase
       .from("profiles")
       .update({ sign_up_complete: true })
@@ -55,12 +66,17 @@ export default function RegistrationForm() {
         return;
       }
       try {
-        await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
+
+        if (error) {
+          toast.error(`Error: ${error.message}`, { duration: 5000 });
+          return;
+        }
+        toast.success("Success");
         await getUser();
-  
         setStep(2);
         setValue(value + 33.333);
       } catch (error) {
@@ -72,7 +88,6 @@ export default function RegistrationForm() {
       }
       try {
         const insertDetails = await supabase.from("vendors").insert({
-          
           vendor_name: companyName,
           location: location,
           vendor_type: type,
@@ -82,55 +97,43 @@ export default function RegistrationForm() {
           console.error("error inserting details", insertDetails.error);
           return;
         }
-  
+
         setStep(3);
         setValue(value + 33.333);
       } catch (err) {
         console.error("Error:", err);
       }
     } else if (step === 3) {
-      if (!profilePicture || !heroImage) {
+      if (!profilePicture && !skipProfilePicture) {
+        await completeSignUp({userID:myUser.id});
+        router.replace('/dashboard')
         return;
       }
-  
       try {
         // Upload profile picture
         const profilePicturePath = `${myUser.id}/${profilePicture.name}`;
         const { data, error } = await supabase.storage
           .from("profile_images")
           .upload(profilePicturePath, profilePicture);
-  
+
         if (error) {
           console.error("Profile picture upload error:", error);
           return;
         }
-  
+
         // Upload hero image
-        const heroImagePath = `${myUser.id}/${heroImage.name}`;
-        const { data: heroImageData, error: heroImageError } =
-          await supabase.storage
-            .from("hero_images")
-            .upload(heroImagePath, heroImage);
-  
-        if (heroImageError) {
-          console.error("Hero image upload error:", heroImageError);
-          return;
-        }
-  
+
         // Update Vendors table with image URLs
-        await supabase
-          .from("vendors")
-          .update({
-            profile_picture_url: profilePicture.name,
-            hero_url: heroImage.name,
-          })
-          .eq("id", myUser.id);
-  
+        // await supabase
+        //   .from("vendors")
+        //   .update({
+        //     profile_picture_url: profilePicture.name,
+        //   })
+        //   .eq("id", myUser.id);
         // Update vendor based on logged-in user ID
-        await completeSignUp(myUser.id);
-  
+        await completeSignUp(myUser.id,profilePicture.name);
+        router.replace('/dashboard')
         // Reset the form or navigate to a success page
-        
         setEmail("");
         setPassword("");
         setConfirmPassword("");
@@ -141,8 +144,10 @@ export default function RegistrationForm() {
         setProfilePicture(null);
         setHeroImage(null);
         setMessage("Registration completed successfully!");
+        toast.success(message);
+        router.replace("/dashboard");
       } catch (err) {
-        console.error("Error:", err);
+        toast.error("Error:", err.message);
       }
     }
   };
@@ -294,7 +299,7 @@ export default function RegistrationForm() {
           <form action="" className="grid grid-cols gap-6">
             <div className="flex flex-col items-start gap-1">
               <label htmlFor="companyName" className="text-sm font-bold">
-                Profile Picture
+                Profile Picture(optional )
               </label>
               <Input
                 radius="sm"
@@ -306,37 +311,41 @@ export default function RegistrationForm() {
                 onChange={(e) => setProfilePicture(e.target.files[0])}
               />
             </div>
-            <div className="flex flex-col items-start gap-1">
-              <div className="flex items-center justify-between w-[100%] gap-4">
-                <label htmlFor="heroImage" className="text-sm font-bold">
-                  Background
-                </label>
-              </div>
-              <Input
-                radius="sm"
-                isRequired
-                type="file"
-                name="heroImage"
-                accept="image/*"
-                className="max-w-auto"
-                onChange={(e) => setHeroImage(e.target.files[0])}
-              />
-            </div>
           </form>
+          <Button
+      color="default"
+      variant="ghost"
+      size="md"
+      radius="sm"
+      onClick={() => setSkipProfilePicture(true)}
+    >
+      Skip
+    </Button>
         </CardBody>
       )}
 
       <CardFooter className="grid grid-cols-2 gap-4">
-        <Button
-          color="default"
-          variant="ghost"
-          size="md"
-          radius="sm"
-          onClick={goBack}
-          disabled={step < 1}
-        >
-          Back
-        </Button>
+        {step === 1 ? (
+          <Button
+            color="default"
+            variant="ghost"
+            size="md"
+            radius="sm"
+            onClick={()=>router.back()}
+          >
+            Cancel
+          </Button>
+        ) : step > 1 ? (
+          <Button
+            color="default"
+            variant="ghost"
+            size="md"
+            radius="sm"
+            onClick={goBack}
+          >
+            Back
+          </Button>
+        ) : null}
 
         <Button
           type="submit"
@@ -348,6 +357,7 @@ export default function RegistrationForm() {
         >
           {step === 3 ? "Complete" : "Next"}
         </Button>
+
       </CardFooter>
     </Card>
   );

@@ -1,7 +1,9 @@
 "use client";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/react";
 import { Input } from "@nextui-org/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@nextui-org/react";
 import { createClient } from "@/utils/supabase/client";
@@ -10,13 +12,21 @@ export default function LoginForm() {
   const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const router =useRouter()
   const signIn = async () => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    console.log(data, error);
+    if(error){
+      console.log(error)
+    }
+    else{
+      toast.success('sign in successful')
+      router.replace('/dashboard');
+    }
+    
+    
   };
 
   const handleEmailChange = (e) => {

@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/client";
 import ProductModel from "../models/ProductModel";
+import toast from "react-hot-toast";
 
 let supabase = createClient();
 
@@ -91,6 +92,19 @@ class ProductController {
     }
   };
 
+  getSingleProduct=async(id)=>{
+    try{
+      const{data,error}=await supabase.from("products").select("*").eq("id",id);
+      if(error){
+        throw error
+      }
+      return data;
+    }catch(e){
+      console.log("Error fetching product",e)
+      throw e;
+    }
+  }
+
   async addTagsToProduct(productId, tagString) {
     try {
       // Split the tagString into an array of tags
@@ -153,14 +167,40 @@ class ProductController {
     }
   }
 
-  async deleteProduct(itemID){
+  async deleteProduct(itemID,imageName){
     try{
       const {error}=await supabase.from("products").delete().eq('id',itemID)
-      return "Product deleted successfully"
+      if(error){
+        throw new Error(`Error deleting product row: ${error}`)
+      }
+      else{
+        const{error:imageDeleteError}=await supabase.storage.from('product_images').remove(itemID)
+        if(imageDeleteError){
+          console.log("Error deleting image : ", imageDeleteError)
+        }
+        toast.success('Item deleted')
+        return "Product deleted successfully"
+      }
+     
+      
     }catch(e){
-      "Error deleting product: ",e
+      toast.error('Something went wrong')
+      return "Error deleting product: ",e
       
     }
   }
+
+  fetchPicture = async (productID, productPicture) => {
+    const { data, error } = supabase.storage
+        .from("product_images")
+        .getPublicUrl(`${productID}/${productPicture}`);
+
+    if (error) {
+      console.error("Error getting public URL:", error);
+    } else {
+      console.log("Public URL:", data.publicUrl);
+      return data.publicUrl;
+    }
+  };
 }
 export default ProductController;

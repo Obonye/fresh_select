@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Navbar,
   NavbarBrand,
@@ -19,7 +20,13 @@ import { ThemeSwitcher } from "./ThemeSwitcher";
 export default function MyNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const menuItems = ["Home", "Dashboard", "Inventory", "Orders", "Billing"];
+  const menuItems = [
+    { label: "Home", path: "/" },
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Inventory", path: "/dashboard/inventory" },
+    { label: "Orders", path: "/dashboard/orders" },
+    { label: "Billing", path: "/dashboard/billing" },
+  ];
   return (
     <Navbar
       className=" bg-transparent"
@@ -30,7 +37,10 @@ export default function MyNav() {
         aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         className="sm:hidden"
       />
-      <NavbarBrand>Logo</NavbarBrand>
+      <NavbarBrand>
+        <Image alt="App logo" src="/app_icon.svg" width={55} height={55} />
+        <h1 className="invisible md:visible">Fresh Select</h1>
+      </NavbarBrand>
       <NavbarContent justify="center" className="hidden sm:flex gap-4">
         <NavbarItem>
           <Link color="foreground" href="/">
@@ -71,8 +81,8 @@ export default function MyNav() {
       </NavbarContent>
 
       <NavbarMenu>
-        {menuItems.map((item, index) => (
-          <NavbarMenuItem key={`${item}-${index}`}>
+        {menuItems.map(({ label, path }, index) => (
+          <NavbarMenuItem key={`${label}-${index}`}>
             <Link
               color={
                 index === 2
@@ -82,10 +92,10 @@ export default function MyNav() {
                   : "foreground"
               }
               className="w-full"
-              href="#"
+              href={path}
               size="lg"
             >
-              {item}
+              {label}
             </Link>
           </NavbarMenuItem>
         ))}

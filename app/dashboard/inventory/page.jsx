@@ -6,7 +6,7 @@ import ProductsTable from "./components/ProductsTable";
 
 export default function Inventory() {
   return (
-    <div>
+    <div className="p-6">
       <section>
         <h1 className="text-3xl font-bold"></h1>
         <h3></h3>

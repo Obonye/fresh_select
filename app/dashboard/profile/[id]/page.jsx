@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import ProfileController from "@/app/controllers/ProfileController";
 import {
   Card,
   CardHeader,
@@ -19,15 +20,17 @@ import EditIcon from "@/app/icons/EditIcon";
 
 export default function ProfilePage({ params }) {
   const supabase = createClient();
-  const [vendorName, setVendorName] = useState();
-  const [location, setLocation] = useState();
-  const [description, setDescription] = useState();
-  const [vendorType, setVendorType] = useState();
-  const [editing, setisEditing] = useState(true);
+  const [vendorName, setVendorName] = useState("");
+  const [location, setLocation] = useState("");
+  const [description, setDescription] = useState("");
+  const [vendorType, setVendorType] = useState("");
+  const [editing, setIsEditing] = useState(false);
+  const [profilePicture, setProfilePicture] = useState();
+  const controller = new ProfileController();
 
-  const handleInputChange = (setState, value) => {
-    setState(value);
-    setisEditing(false);
+  const handleInputChange = (setState) => (e) => {
+    setState(e.target.value);
+    setIsEditing(true);
   };
 
   useEffect(() => {
@@ -44,17 +47,24 @@ export default function ProfilePage({ params }) {
           setLocation(data[0].location);
           setDescription(data[0].description);
           setVendorType(data[0].vendor_type);
+          controller
+            .fetchPicture(params.id, data[0].profile_picture_url)
+            .then((data) => {
+              console.log(data);
+              setProfilePicture(data);
+            });
         }
       } catch (e) {
         console.log("Error, ", e);
       }
     };
+
     fetchProfileID();
-  },[params.id, supabase]);
+  }, [params.id, params.profile_picture_url, supabase]);
 
   const handleSaveChanges = async () => {
     try {
-      const {error } = await supabase
+      const { error } = await supabase
         .from("vendors")
         .update({
           vendor_name: vendorName,
@@ -66,13 +76,12 @@ export default function ProfilePage({ params }) {
       if (error) {
         console.log("Failed to update profile");
       } else {
-        setisEditing(false);
+        setIsEditing(false);
       }
     } catch (e) {
       console.error("Error updating profile:", e);
     }
   };
-
 
   return (
     <div>
@@ -80,22 +89,18 @@ export default function ProfilePage({ params }) {
         <Card className="w-[375px] px-4">
           <CardHeader className="flex flex-col items-start gap-4">
             <div className="flex justify-between w-[100%]">
-              <h1 className="text-4xl text-center pb-4">Profile</h1>
+              <h1 className="text-2xl text-center pb-4">Profile Details</h1>
             </div>
-
             <div className="flex items-center gap-2">
-              <Avatar
-                src="https://i.pravatar.cc/150?u=a04258114e29026302d"
-                className="w-20 h-20 text-large"
-              />
+              <Avatar src={profilePicture} className="w-20 h-20 text-large" />
               <div className="flex flex-col gap-1">
                 <Input
                   size="lg"
+                  label="Name"
+                  labelPlacement="outside"
                   className="text-2xl bg-transparent w-[100%]"
                   value={vendorName}
-                  onChange={(e) =>
-                    handleInputChange(setVendorName, e.target.value)
-                  }
+                  onChange={handleInputChange(setVendorName)}
                 ></Input>
               </div>
             </div>
@@ -107,29 +112,25 @@ export default function ProfilePage({ params }) {
                 label="Type"
                 labelPlacement="outside"
                 value={vendorType}
-                onChange={(e) =>
-                  handleInputChange(setVendorType, e.target.value)
-                }
+                onChange={handleInputChange(setVendorType)}
               ></Input>
               <Textarea
                 label="Description"
                 labelPlacement="outside"
                 value={description}
-                onChange={(e) =>
-                  handleInputChange(setDescription, e.target.value)
-                }
+                onChange={handleInputChange(setDescription)}
               ></Textarea>
               <Input
                 label="Location"
                 labelPlacement="outside"
                 value={location}
-                onChange={(e) => handleInputChange(setLocation, e.target.value)}
+                onChange={handleInputChange(setLocation)}
               ></Input>
             </div>
           </CardBody>
           <CardFooter className="flex justify-end">
             <Button
-              isDisabled={editing}
+              isDisabled={!editing}
               className="bg-orange-500 disabled:bg-gray-600"
               onClick={handleSaveChanges}
             >
