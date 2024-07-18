@@ -1,7 +1,6 @@
 "use client";
 
 import toast from "react-hot-toast";
-
 import React, { useState, useEffect } from "react";
 import {
   Modal,
@@ -13,7 +12,6 @@ import {
   Input,
   Textarea,
 } from "@nextui-org/react";
-import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { useDisclosure } from "@nextui-org/react";
 import ProductController from "@/app/controllers/ProductController";
 import { createClient } from "@/utils/supabase/client";
@@ -38,24 +36,24 @@ export default function AddItemModal({ variant }) {
   const controller = new ProductController();
   const supabase = createClient();
 
-  async function getUser() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    }
+    getUser();
+  }, [supabase]);
 
-    console.log(user);
-    setUser(user);
-  }
   const handleNext = () => {
     setStep(step + 1);
   };
 
-  const handleSelectCategory = (categoryData) => {
-    setSelectedCategoryData(categoryData);
-  };
-
   const handlePrev = () => {
     setStep(step - 1);
+  };
+
+  const handleSelectCategory = (categoryData) => {
+    setSelectedCategoryData(categoryData);
   };
 
   const handleSubmit = async () => {
@@ -70,57 +68,50 @@ export default function AddItemModal({ variant }) {
           quantity: parseInt(quantity),
           expiry_date: expiryDate,
           classification: classification,
-          product_image: productImage.name,
         })
         .select();
-      await getUser();
-      const productImagePath = `${data[0].id}/${productImage.name}`;
-      const { d, e } = await supabase.storage
-        .from("product_images")
-        .upload(productImagePath, productImage).then;
-      if (e) {
-        console.error("Failed to upload the product image", e);
-        return;
-      }
-      const imageUrl = await controller.fetchPicture(
-        data[0].id,
-        productImage.name
-      );
-      console.log(imageUrl);
-      await supabase
-        .from("products")
-        .update({
-          product_image: imageUrl,
-        })
-        .eq("id", data[0].id);
-      // await supabase.from('products').update({
-      //   product_image:productImage.name
-      // }).eq("id",data[0].id)
 
       if (error) {
         console.log("Error creating product", error);
-      } else {
-        console.log("Selected Category ID:", selectedCategoryData);
-        controller.insertProductCategories(data[0].id, selectedCategoryData.id);
-        controller.addTagsToProduct(data[0].id, tags);
-        console.log("Item created successfully:", data[0].id);
-        toast.success('Item added successfully',{position:'top-center'})
-        onClose()
-         
-
-        //reset values
-        setItemName("");
-        setDescription("");
-        setSelectedCategoryData(null);
-        setQuantity(0);
-        setOriginalPrice(0);
-        setNewPrice(0);
-        setExpiryDate("");
-        setTags("");
-        setClassification("");
-        setStockThreshold(0);
-        setStep(1)
+        return;
       }
+
+      if (productImage) {
+        const productImagePath = `${data[0].id}/${productImage.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from("product_images")
+          .upload(productImagePath, productImage);
+
+        if (uploadError) {
+          console.error("Failed to upload the product image", uploadError);
+          return;
+        }
+
+        const imageUrl = await controller.fetchPicture(data[0].id, productImage.name);
+        await supabase
+          .from("products")
+          .update({ product_image: imageUrl })
+          .eq("id", data[0].id);
+      }
+
+      controller.insertProductCategories(data[0].id, selectedCategoryData.id);
+      controller.addTagsToProduct(data[0].id, tags);
+      toast.success('Item added successfully', { position: 'top-center' });
+
+      // Reset values
+      setItemName("");
+      setDescription("");
+      setSelectedCategoryData(null);
+      setQuantity(0);
+      setOriginalPrice(0);
+      setNewPrice(0);
+      setExpiryDate("");
+      setTags("");
+      setClassification("");
+      setStockThreshold(0);
+      setStep(1);
+
+      onClose();
     } catch (e) {
       console.log("Error occurred: ", e);
     }
@@ -140,14 +131,12 @@ export default function AddItemModal({ variant }) {
             {step === 1 && (
               <>
                 <div>
-                <label htmlFor="productImage" className="text-sm ">
-                Product Image
-              </label>
+                  <label htmlFor="productImage" className="text-sm">Product Image</label>
                   <Input
                     type="file"
                     name="productImage"
                     accept="image/*"
-                    className="max-w-auto p-0 mx-0 "
+                    className="max-w-auto p-0 mx-0"
                     onChange={(e) => setProductImage(e.target.files[0])}
                   />
                   <Input
@@ -156,7 +145,7 @@ export default function AddItemModal({ variant }) {
                     labelPlacement="outside"
                     type="text"
                     name="itemName"
-                    placeholder="eg Watermelon"
+                    placeholder="e.g., Watermelon"
                     value={itemName}
                     onChange={(e) => setItemName(e.target.value)}
                   />
@@ -181,7 +170,7 @@ export default function AddItemModal({ variant }) {
                     isRequired
                     label="Tags"
                     labelPlacement="outside"
-                    placeholder="fruits,healthy,meat, etc..."
+                    placeholder="e.g., fruits, healthy, meat"
                     type="text"
                     name="tags"
                     value={tags}
@@ -284,7 +273,6 @@ export default function AddItemModal({ variant }) {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      
     </>
   );
 }

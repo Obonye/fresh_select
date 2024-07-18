@@ -31,15 +31,15 @@ export default function RegistrationForm() {
   const router = useRouter();
   const completeSignUp = async (userID, profilePicture) => {
     await supabase
-    .from("vendors")
-    .update({
-      profile_picture_url: profilePicture,
-    })
-    .eq("id", myUser.id);
+      .from("vendors")
+      .update({
+        profile_picture_url: profilePicture,
+      })
+      .eq("id", myUser.id);
 
     await supabase
       .from("profiles")
-      .update({ sign_up_complete: true })
+      .update({ sign_up_complete: true, role: "vendor" })
       .eq("id", userID);
   };
 
@@ -105,8 +105,8 @@ export default function RegistrationForm() {
       }
     } else if (step === 3) {
       if (!profilePicture && !skipProfilePicture) {
-        await completeSignUp({userID:myUser.id});
-        router.replace('/dashboard')
+        await completeSignUp({ userID: myUser.id });
+        router.replace("/dashboard");
         return;
       }
       try {
@@ -131,8 +131,8 @@ export default function RegistrationForm() {
         //   })
         //   .eq("id", myUser.id);
         // Update vendor based on logged-in user ID
-        await completeSignUp(myUser.id,profilePicture.name);
-        router.replace('/dashboard')
+        await completeSignUp(myUser.id, profilePicture.name);
+        router.replace("/dashboard");
         // Reset the form or navigate to a success page
         setEmail("");
         setPassword("");
@@ -313,14 +313,14 @@ export default function RegistrationForm() {
             </div>
           </form>
           <Button
-      color="default"
-      variant="ghost"
-      size="md"
-      radius="sm"
-      onClick={() => setSkipProfilePicture(true)}
-    >
-      Skip
-    </Button>
+            color="default"
+            variant="ghost"
+            size="md"
+            radius="sm"
+            onClick={() => setSkipProfilePicture(true)}
+          >
+            Skip
+          </Button>
         </CardBody>
       )}
 
@@ -331,7 +331,7 @@ export default function RegistrationForm() {
             variant="ghost"
             size="md"
             radius="sm"
-            onClick={()=>router.back()}
+            onClick={() => router.back()}
           >
             Cancel
           </Button>
@@ -357,7 +357,6 @@ export default function RegistrationForm() {
         >
           {step === 3 ? "Complete" : "Next"}
         </Button>
-
       </CardFooter>
     </Card>
   );

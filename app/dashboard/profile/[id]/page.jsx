@@ -60,7 +60,7 @@ export default function ProfilePage({ params }) {
     };
 
     fetchProfileID();
-  }, [params.id, params.profile_picture_url, supabase]);
+  }, [controller, params.id, params.profile_picture_url, supabase]);
 
   const handleSaveChanges = async () => {
     try {

@@ -1,40 +1,31 @@
 "use client";
-import React, { useState } from "react";
-import toast from "react-hot-toast";
-import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/react";
-import { Input } from "@nextui-org/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@nextui-org/react";
-import { createClient } from "@/utils/supabase/client";
+import React from 'react';
+import toast from 'react-hot-toast';
+import { Card, CardHeader, CardBody, CardFooter } from '@nextui-org/react';
+import { Input } from '@nextui-org/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@nextui-org/react';
+import { createClient } from '@/utils/supabase/client';
+import { useForm } from 'react-hook-form';
 
 export default function LoginForm() {
   const supabase = createClient();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const router =useRouter()
-  const signIn = async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+  const router = useRouter();
+  const { register, handleSubmit, formState: { errors } } = useForm();
+
+  const onSubmit = async (data) => {
+    const { email, password } = data;
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    if(error){
-      console.log(error)
-    }
-    else{
-      toast.success('sign in successful')
+    if (error) {
+      console.log(error);
+    } else {
+      toast.success('Sign in successful');
       router.replace('/dashboard');
     }
-    
-    
-  };
-
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-  };
-
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
   };
 
   return (
@@ -59,8 +50,9 @@ export default function LoginForm() {
                 name="email"
                 placeholder="junior@nextui.org"
                 className="max-w-auto p-0 mx-0"
-                value={email}
-                onChange={handleEmailChange}
+                {...register('email', { required: 'Email is required' })}
+                errorMessage={errors.email?.message}
+                
               />
             </div>
             <div className="flex flex-col items-start gap-1">
@@ -78,8 +70,8 @@ export default function LoginForm() {
                 type="password"
                 name="password"
                 className="max-w-auto"
-                value={password}
-                onChange={handlePasswordChange}
+                {...register('password', { required: 'Password is required' })}
+                error={errors.password?.message}
               />
             </div>
           </form>
@@ -91,7 +83,7 @@ export default function LoginForm() {
             size="md"
             radius="sm"
             variant="solid"
-            onClick={signIn}
+            onClick={handleSubmit(onSubmit)}
           >
             Login
           </Button>

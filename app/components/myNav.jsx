@@ -58,7 +58,7 @@ export default function MyNav() {
           </Link>
         </NavbarItem>
         <NavbarItem>
-          <Link color="foreground" href="#">
+          <Link color="foreground" href="/dashboard/orders">
             Orders
           </Link>
         </NavbarItem>

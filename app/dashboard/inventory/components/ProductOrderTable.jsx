@@ -32,13 +32,12 @@ import toast from "react-hot-toast";
 
 const statusColorMap = {
   pending: "warning",
-  delivered: "success",
-  processing: "secondary",
-  shipped:"primary"
+  completed: "success",
+  cancelled: "danger",
 };
 
 
-export default function OrderTable() {
+export default function ProductOrderTable(params) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState('');
   const [filterStartDate, setFilterStartDate] = useState(null);
@@ -53,8 +52,8 @@ export default function OrderTable() {
     async load({ signal }) {
       try {
         const { data, error } = await supabase
-          .from("product_orders")
-          .select("*")
+          .from("order_summary")
+          .select("*").eq('proudct_id',params.id)
           .abortSignal(signal);
 
         if (error) {

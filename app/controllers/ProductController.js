@@ -202,5 +202,13 @@ class ProductController {
       return data.publicUrl;
     }
   };
+  async fetchOrderSummary(productID){
+    const {data,error}=await supabase.from('order_summary').select('*').eq('product_id',productID)
+    if(error){
+      return "Error: ",e
+    }
+    console.log(data)
+    return data
+  }
 }
 export default ProductController;
