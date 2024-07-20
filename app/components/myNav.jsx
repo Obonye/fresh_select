@@ -1,7 +1,14 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownSection,
+  DropdownItem,
+} from "@nextui-org/react";
 import {
   Navbar,
   NavbarBrand,
@@ -16,9 +23,14 @@ import {
 import MyAvatar from "./avatar";
 import BellIcon from "../icons/BellIcon";
 import { ThemeSwitcher } from "./ThemeSwitcher";
+import { NotificationList } from "../components/notifications_list";
+import { NotificationsController } from "../controllers/notifications_controller";
+import { createClient } from "@/utils/supabase/client";
 
+let supabase = createClient();
 export default function MyNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const menuItems = [
     { label: "Home", path: "/" },
@@ -27,6 +39,36 @@ export default function MyNav() {
     { label: "Orders", path: "/dashboard/orders" },
     { label: "Billing", path: "/dashboard/billing" },
   ];
+
+  const fetchNotificationCount = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("order_notifications")
+        .select("*")
+        .eq("read", false);
+      if (data) {
+        setNotificationCount(data.length);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notification count:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotificationCount();
+
+    // Set up an interval to fetch the count every 5 minutes
+    const intervalId = setInterval(fetchNotificationCount, 5 * 60 * 1000);
+
+    // Clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const handleNotificationOpen = () => {
+    // Optionally reset the notification count when opened
+    setNotificationCount(0);
+    // You might want to call an API to mark notifications as read here
+  };
   return (
     <Navbar
       className=" bg-transparent"
@@ -72,11 +114,21 @@ export default function MyNav() {
         <NavbarMenuItem>
           <ThemeSwitcher />
         </NavbarMenuItem>
-        <Badge color="danger" content={3} shape="circle">
-          <Button isIconOnly variant="faded">
-            <BellIcon />
-          </Button>
+        <Badge color="primary" content={notificationCount} shape="circle">
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly variant="faded">
+                <BellIcon />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+              <DropdownItem>
+                <NotificationList></NotificationList>
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         </Badge>
+
         <MyAvatar></MyAvatar>
       </NavbarContent>
 
